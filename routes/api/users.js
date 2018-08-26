@@ -80,7 +80,6 @@ router.post("/login", (req, res) => {
     }
 
     bcrypt.compare(password, user.password).then(isMatched => {
-      console.log(isMatched);
       if (!isMatched) {
         errors.password = "Password incorrect";
         return res.status(400).json(errors);
