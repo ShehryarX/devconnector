@@ -36,4 +36,76 @@ router.get(
   }
 );
 
+// @route   POST api/profiles/
+// @desc    Createor edit user profile
+// @access  Private
+router.post(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    const {
+      id,
+      handle,
+      company,
+      website,
+      location,
+      bio,
+      status,
+      githubusername,
+      skills,
+      youtube,
+      facebook,
+      twitter,
+      instagram,
+      linkedin
+    } = req.user;
+
+    // get fields
+    const profileFields = {};
+    profileFields.user = id;
+    if (handle) profileFields.handle = handle;
+    if (company) profileFields.company = company;
+    if (website) profileFields.website = website;
+    if (location) profileFields.location = location;
+    if (bio) profileFields.bio = bio;
+    if (status) profileFields.status = status;
+    if (githubusername) profileFields.githubusername = githubusername;
+
+    // skills - split into array
+    if (typeof skills !== "undefined") profileFields.skills = skills.split(",");
+
+    // social
+    profileFields.social = {};
+    if (youtube) profileFields.social.youtube = youtube;
+    if (linkedin) profileFields.social.linkedin = linkedin;
+    if (twitter) profileFields.social.twitter = twitter;
+    if (facebook) profileFields.social.facebook = facebooke;
+    if (instagram) profileFields.social.instagram = instagram;
+
+    Profile.findOne({ user: id }).then(profile => {
+      if (profile) {
+        // update profile
+        Profile.findOneAndUpdate(
+          { user: id },
+          { $set: profileFields },
+          { new: true }
+        ).then(profile => res.json(profile));
+      } else {
+        // create profile
+
+        // check if handle exists
+        Profile.findOne({ handle: profileFields.handle }).then(profile => {
+          if (profile) {
+            errors.handle = "That handle already exists";
+            res.status(400).json(errors);
+          }
+
+          // save profile
+          new Profile(profileFields).save().then(profile => res.json(profile));
+        });
+      }
+    });
+  }
+);
+
 module.exports = router;
