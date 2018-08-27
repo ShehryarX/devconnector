@@ -3,6 +3,9 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const passport = require("passport");
 
+// load validation
+const validateProfileInput = require("../../validation/profile");
+
 // load Profile model
 const Profile = require("../../models/Profile");
 
@@ -24,6 +27,7 @@ router.get(
     const errors = {};
 
     Profile.findOne({ user: req.user.id })
+      .populate("user", ["name", "avatar"])
       .then(profile => {
         if (!profile) {
           errors.noprofile = "There is no profile for this user";
@@ -37,12 +41,17 @@ router.get(
 );
 
 // @route   POST api/profiles/
-// @desc    Createor edit user profile
+// @desc    Create or edit user profile
 // @access  Private
 router.post(
   "/",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
+    const { errors, isValid } = validateProfileInput(req.body);
+
+    // check validation
+    if (!isValid) return res.status(400).json(errors);
+
     const {
       id,
       handle,
@@ -58,11 +67,11 @@ router.post(
       twitter,
       instagram,
       linkedin
-    } = req.user;
+    } = req.body;
 
     // get fields
     const profileFields = {};
-    profileFields.user = id;
+    profileFields.user = req.user.id;
     if (handle) profileFields.handle = handle;
     if (company) profileFields.company = company;
     if (website) profileFields.website = website;
@@ -79,8 +88,10 @@ router.post(
     if (youtube) profileFields.social.youtube = youtube;
     if (linkedin) profileFields.social.linkedin = linkedin;
     if (twitter) profileFields.social.twitter = twitter;
-    if (facebook) profileFields.social.facebook = facebooke;
+    if (facebook) profileFields.social.facebook = facebook;
     if (instagram) profileFields.social.instagram = instagram;
+
+    // profileFields.user = req.user.id;
 
     Profile.findOne({ user: id }).then(profile => {
       if (profile) {
@@ -98,10 +109,12 @@ router.post(
           if (profile) {
             errors.handle = "That handle already exists";
             res.status(400).json(errors);
+          } else {
+            // save profile
+            new Profile(profileFields)
+              .save()
+              .then(profile => res.json(profile));
           }
-
-          // save profile
-          new Profile(profileFields).save().then(profile => res.json(profile));
         });
       }
     });
