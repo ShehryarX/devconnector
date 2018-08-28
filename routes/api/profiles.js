@@ -155,32 +155,28 @@ router.post(
     if (facebook) profileFields.social.facebook = facebook;
     if (instagram) profileFields.social.instagram = instagram;
 
-    // TODO: Accounts exists and handle wanted exists too!
-
     Profile.findOne({ user: req.user.id }).then(profile => {
-      if (profile) {
-        // update profile
-        Profile.findOneAndUpdate(
-          { user: req.user.id },
-          { $set: profileFields },
-          { new: true }
-        ).then(profile => res.json(profile));
-      } else {
-        // create profile
-
+      Profile.findOne({ handle: profileFields.handle }).then(handleProfile => {
         // check if handle exists
-        Profile.findOne({ handle: profileFields.handle }).then(profile => {
+        if (handleProfile) {
+          errors.handle = "The handle alrady exists";
+          res.status(400).json(errors);
+        } else {
           if (profile) {
-            errors.handle = "That handle already exists";
-            res.status(400).json(errors);
+            // update profile
+            Profile.findOneAndUpdate(
+              { user: req.user.id },
+              { $set: profileFields },
+              { new: true }
+            ).then(profile => res.json(profile));
           } else {
             // save profile
             new Profile(profileFields)
               .save()
               .then(profile => res.json(profile));
           }
-        });
-      }
+        }
+      });
     });
   }
 );
@@ -272,6 +268,73 @@ router.post(
         })
         .catch(err => console.log(err));
     });
+  }
+);
+
+// @route   DELETE api/profiles/experience/:exp_id
+// @desc    Delete experience from profile
+// @access  Private
+router.delete(
+  "/experience/:exp_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      // get remove index
+      const removeIndex = profile.experience
+        .map(item => item.id)
+        .indexOf(req.params.exp_id);
+
+      // splice out of array
+      profile.experience.splice(removeIndex, 1);
+
+      // save
+      profile
+        .save()
+        .then(profile => res.json(profile))
+        .catch(err => res.status(404).json(err));
+    });
+  }
+);
+
+// @route   DELETE api/profiles/education/:edu_id
+// @desc    Delete education from profile
+// @access  Private
+router.delete(
+  "/education/:edu_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      // get remove index
+      const removeIndex = profile.education
+        .map(item => item.id)
+        .indexOf(req.params.edu_id);
+
+      // splice out of array
+      profile.education.splice(removeIndex, 1);
+
+      // save
+      profile
+        .save()
+        .then(profile => res.json(profile))
+        .catch(err => res.status(404).json(err));
+    });
+  }
+);
+
+// @route   DELETE api/profiles/
+// @desc    Delete user and profile
+// @access  Private
+router.delete(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOneAndRemove({ user: req.user.id })
+      .then(() => {
+        User.findOneAndRemove({ _id: req.user.id })
+          .then(() => res.json({ success: true }))
+          .catch(err => console.log(err));
+      })
+      .catch(err => console.log(err));
   }
 );
 
