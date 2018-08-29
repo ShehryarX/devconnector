@@ -6,6 +6,9 @@ const passport = require("passport");
 // Post model
 const Post = require("../../models/Post");
 
+// Profile model
+const Profile = require("../../models/Profile");
+
 // validation
 const validatePostInput = require("../../validation/post");
 
@@ -49,7 +52,7 @@ router.post(
     // check validation
     if (!isValid) {
       // if any errors, send 400 with errors object
-      res.status(400).json({ nopostsfound: "No posts found" });
+      return res.status(400).json({ nopostsfound: "No posts found" });
     }
 
     // avatar, name will come from React application
@@ -65,6 +68,36 @@ router.post(
 
     // save post
     newPost.save().then(post => res.json(post));
+  }
+);
+
+// @route   DELETE api/posts/:id
+// @desc    Delete post
+// @access  Private
+router.delete(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      Post.findById(req.params.id)
+        .then(post => {
+          // check for post owner
+
+          // return unauthorized status
+          if (post.user.toString() !== req.user.id)
+            return res
+              .status(401)
+              .json({ notauthorized: "User not authorized" });
+
+          post
+            .remove()
+            .then(() => res.json({ success: true }))
+            .catch(err => {
+              res.status(404).json({ postnotfound: "No post found" });
+            });
+        })
+        .catch(err => res.status(404).json({ postnotfound: "No post found" }));
+    });
   }
 );
 
