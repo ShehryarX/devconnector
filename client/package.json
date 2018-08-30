@@ -5,7 +5,10 @@
   "dependencies": {
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
+<<<<<<< HEAD
     "react-router-dom": "^4.3.1",
+=======
+>>>>>>> 2763444dd390f3efd8418d1696c3190f281c6f8a
     "react-scripts": "1.1.5"
   },
   "scripts": {
