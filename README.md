@@ -28,7 +28,7 @@ Social media network for developers
   - [x] setup dev proxy
   - [x] use `concurrently` to run both the server and front-end
 - [ ] React Router And Component State
-  - setup `react-router`
+  - [ ] setup `react-router`
 - [ ] Redux and Authentication
 - [ ] Dashboard and Profile State
 - [ ] Profile Display
