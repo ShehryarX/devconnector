@@ -27,10 +27,10 @@ Social media network for developers
   - [x] create header, slider, and footer for main page
   - [x] setup dev proxy
   - [x] use `concurrently` to run both the server and front-end
-- [ ] React Router And Component State
+- [x] React Router And Component State
   - [ ] setup `react-router`
-- [ ] Redux and Authentication
-- [ ] Dashboard and Profile State
-- [ ] Profile Display
+- [x] Redux and Authentication
+- [x] Dashboard and Profile State
+- [x] Profile Display
 - [ ] Posts and Comments
 - [ ] Prepare and Deploy
